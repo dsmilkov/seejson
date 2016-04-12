@@ -1,0 +1,2 @@
+# seejson
+Visualize any json
