@@ -1,5 +1,61 @@
 type Record = any;
 
+enum Type {
+  STRING,
+  NUMBER,
+  OBJECT, // ObjectStats.
+  ARRAY_NUMBER, // NumericArrayStats.
+  ARRAY_STRING, // StringArrayStats.
+  ARRAY_OBJECT // ObjectArrayStats.
+};
+
+interface Histogram {
+}
+
+
+// [{a: ["1", "2"], b: 4}, {a: ["2", "3"], b: 5}] = {a: ["1", "2", "3", "4"], b: [4, 5]}
+type ArrayStats = StringArrayStats | NumberArrayStats;
+
+interface ObjectArrayStats {
+  keyCount: {[key: string]: number};
+  keyStats: {[key: string]: ArrayStats};
+  // When aggregating array of objects, the following types are created:
+  // NUMBER ==> ARRAY_NUMBER (NumberArrayStats),
+  // STRING ==> ARRAY_STRING (StringArrayStats),
+  // OBJECT ==> ARRAY_OBJECT (ObjectArrayStats),
+  // ARRAY_NUMBER ==> ARRAY_NUMBER (combine all number[]) (NumericArrayStats).
+  // ARRAY_STRING ==> ARRAY_STRING (combine all string[]), (StringArrayStats).
+  // ARRAY_OBJECT ==> ARRAY_OBJECT (combine all object[]), (ObjectArrayStats).
+}
+
+interface ObjectStats {
+  numKeys: number;
+  arrayKeyStats: {[key: string]: ArrayStats};
+}
+
+interface StringArrayStats extends GeneralArrayStats {
+  minLength: number;
+  maxLength: number;
+  avgLength: number;
+  // Only for repetitive strings.
+  histogram?: Histogram;
+}
+
+interface NumberArrayStats extends GeneralArrayStats {
+  min: number;
+  max: number;
+  median: number;
+  mean: number;
+  // For both repetitive and non-repetitive numbers.
+  histogram: Histogram;
+}
+
+interface GeneralArrayStats {
+  numNonMissing: number;
+  numMissing: number;
+  numUnique: number;
+}
+
 function getAllFields(records: Record[]) {
   let keyCount: {[key: string]: number} = {};
   // Find all the keys and how many records have it.
