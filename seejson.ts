@@ -12,6 +12,9 @@ enum Type {
 interface Histogram {
 }
 
+interface ObjectRecord {
+  [key: string]: Record;
+}
 
 // [{a: ["1", "2"], b: 4}, {a: ["2", "3"], b: 5}] = {a: ["1", "2", "3", "4"], b: [4, 5]}
 type ArrayStats = StringArrayStats | NumberArrayStats;
@@ -57,7 +60,7 @@ interface GeneralArrayStats {
 }
 
 function getAllFields(records: Record[]) {
-  let keyCount: {[key: string]: number} = {};
+  let keyCount: ObjectRecord = {};
   // Find all the keys and how many records have it.
   for (let i = 0; i < records.length; ++i) {
     let record = records[i];
@@ -74,8 +77,46 @@ function getAllFields(records: Record[]) {
   console.log(keyCount);
 }
 
-function analyze(records: Record[]) {
-  getAllFields(records);
+function analyzeObject(record: {[key: string]: Record}) {
+
+}
+
+function analyzeStringArray(record: string[]) {
+
+}
+
+function analyzeNumberArray(record: number[]) {
+
+}
+
+function analyzeObjectArray(record: ObjectRecord[]) {
+
+}
+
+function analyze(record: Record) {
+  if (record.constructor === Array) {
+    // We are dealing with Array.
+    let records = <Record[]> record;
+    if (records.length == 0) {
+      // Empty array. Nothing to analyze.
+      return null;
+    } else if (typeof records[0] == "string") {
+      // string[].
+      return analyzeStringArray(record);
+    } else if (typeof records[0] == "number") {
+      // number[].
+      return analyzeNumberArray(record);
+    } else {
+      // object[].
+      return analyzeObjectArray(record);
+    }
+  } else if (typeof record == "string") {
+    return null;
+  } else if (typeof record == "number") {
+    return null;
+  } else { // We are deadling with object.
+    return analyzeObject(record);
+  }
 }
 
 function parseLineSeparatedJson(text: string): Record[] {
